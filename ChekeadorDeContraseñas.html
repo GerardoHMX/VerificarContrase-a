@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><script type="text/javascript" src="/___vscode_livepreview_injected_script"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>¿Qué tan segura es tu contraseña?</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background-color: #000;
+            color: #00ff00;
+            margin: 0;
+            padding: 20px;
+            height: 100vh;
+            overflow: auto;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        form {
+            width: 100%;
+            max-width: 600px;
+            margin: auto;
+        }
+
+        input, button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border: 1px solid #00ff00;
+            background-color: transparent;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+        }
+
+        button {
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #005500;
+        }
+
+        .info, .security-status {
+            font-size: 14px;
+            white-space: pre; /* Preserves spaces and line breaks */
+            font-family: 'Courier New', monospace;
+        }
+
+        #charCount {
+            text-align: center;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>¿Qué tan segura es tu contraseña?</h1>
+    <form id="passwordForm">
+        <label for="password">Ingrese su contraseña:</label>
+        <input type="password" id="password" name="password" autocomplete="off">
+        <input type="checkbox" id="showPasswordCheck"><label for="showPasswordCheck">Mostrar Contraseña</label>
+        <button type="submit">Comprobar seguridad de la contraseña</button>
+    </form>
+    <div id="charCount"></div>
+    <div id="passwordTips" class="info" style="display: none;"></div>
+    <div id="attemptsCount" class="info"></div>
+    <div id="securityStatus" class="security-status"></div>
+    <script>
+        const passwordInput = document.getElementById("password");
+        const charCountDiv = document.getElementById("charCount");
+        const attemptsDiv = document.getElementById("attemptsCount");
+        const securityStatusDiv = document.getElementById("securityStatus");
+
+        // Update character count
+        passwordInput.addEventListener('input', function() {
+            charCountDiv.textContent = `Caracteres: ${passwordInput.value.length}`;
+        });
+
+        document.getElementById("passwordForm").addEventListener("submit", function (e) {
+            e.preventDefault();
+            const password = passwordInput.value;
+            const passwordTips = document.getElementById("passwordTips");
+            passwordTips.style.display = "block";
+            const tips = "Consejos para una contraseña segura:\n- Utiliza al menos 12 caracteres.\n- Incluye números, símbolos y mayúsculas.\n- Evita palabras comunes y combinaciones predecibles.";
+            let i = 0
+            passwordTips.innerHTML = ''; // Clear previous tips
+
+            function typeWriter() {
+                if (i < tips.length) {
+                    passwordTips.innerHTML += tips.charAt(i);
+                    i++;
+                    setTimeout(typeWriter, 30); // Adjust typing speed here
+                }
+            }
+
+            typeWriter(); // Start typing tips
+            calculateAttempts(password);
+        });
+
+        document.getElementById("showPasswordCheck").addEventListener('change', function () {
+            if (this.checked) {
+                passwordInput.type = 'text';
+            } else {
+                passwordInput.type = 'password';
+            }
+        });
+
+        function calculateAttempts(password) {
+            const charset = 95; // ASCII characters from 32 to 126
+            const combinations = Math.pow(charset, password.length);
+            const attempts = combinations / 1000000000; // Assuming 1 billion guesses per second
+            animateAttempts(0, Math.ceil(attempts), password);
+        }
+
+        function animateAttempts(start, end, password) {
+            let current = start;
+            const duration = 3000; // Duration of the animation in milliseconds (3 seconds)
+            const stepTime = Math.max(1, Math.floor(duration / end));
+
+            function step() {
+                attemptsDiv.textContent = `Intentos necesarios para descifrar la contraseña: ${current.toLocaleString()}`;
+                current += Math.ceil(end / (duration / 10)); // Increase by a chunk size
+                if (current < end) {
+                    setTimeout(step, stepTime);
+                } else {
+                    attemptsDiv.textContent = `Intentos necesarios para descifrar la contraseña: ${end.toLocaleString()}`;
+                    checkPasswordSecurity(password);
+                }
+            }
+
+            step();
+        }
+
+        function checkPasswordSecurity(password) {
+            const regexSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/;
+            const regexNumber = /\d+/;
+            const isSecure = password.length >= 12 && regexSpecial.test(password) && regexNumber.test(password);
+            securityStatusDiv.textContent = isSecure ? "La contraseña es segura." : "La contraseña no es segura.";
+        }
+    </script>
+    <h1>Creado por Gerardo Huizar</h1>
+</body>
+</html>
